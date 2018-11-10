@@ -452,6 +452,29 @@ module.exports = function(crowi, app) {
     return res.json({ status: true });
   };
 
+  actions.api.securityPassportMikanSetting = async function(req, res) {
+    const form = req.form.settingForm;
+    if (!req.form.isValid) {
+      return res.json({ status: false, message: req.form.errors.join('\n') });
+    }
+    debug('form content', form);
+    try {
+      await configManager.updateConfigsInTheSameNamespace('crowi', form);
+      // reset strategy
+      crowi.passportService.resetMikanStrategy();
+      // setup strategy
+      if (configManager.getConfig('crowi', 'security:passport-mikan:isEnabled')) {
+        crowi.passportService.setupMikanStrategy(true);
+      }
+    }
+    catch (err) {
+      logger.error(err);
+      return res.json({ status: false, message: err.message });
+    }
+
+    return res.json({ status: true });
+  };
+
   actions.api.securityPassportLdapSetting = async function(req, res) {
     const form = req.form.settingForm;
 

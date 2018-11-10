@@ -1,0 +1,163 @@
+<form action="/_api/admin/security/passport-mikan" method="post" class="form-horizontal" id="mikanSetting" role="form">
+  <fieldset>
+    <legend>Mikan Configuration</legend>
+    {% set nameForIsMikanEnabled = "settingForm[security:passport-mikan:isEnabled]" %}
+    {% set isMikanEnabled = settingForm['security:passport-mikan:isEnabled'] %}
+    <div class="form-group">
+      <label for="{{nameForIsMikanEnabled}}" class="col-xs-3 control-label">Use Mikan</label>
+      <div class="col-xs-6">
+        <div class="btn-group btn-toggle" data-toggle="buttons">
+          <label class="btn btn-default {% if isMikanEnabled %}active{% endif %}" data-active-class="primary">
+            <input name="{{nameForIsMikanEnabled}}" value="true" type="radio"
+                                                                 {% if true === isMikanEnabled %}checked{% endif %}> Enable
+          </label>
+          <label class="btn btn-default {% if !isMikanEnabled %}active{% endif %}" data-active-class="primary">
+            <input name="{{nameForIsMikanEnabled}}" value="false" type="radio"
+                                                                  {% if !isMikanEnabled %}checked{% endif %}> Disable
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="passport-mikan-hide-when-disabled" {%if !isMikanEnabled %}style="display: none;"{% endif %}>
+      <div class="form-group">
+        <label for="settingForm[security:passport-mikan:apiUrl]" class="col-xs-3 control-label">API URL</label>
+        <div class="col-xs-6">
+          <input class="form-control" type="text"
+                                      name="settingForm[security:passport-mikan:apiUrl]" value="{{ settingForm['security:passport-mikan:apiUrl'] || '' }}">
+          <p class="help-block">
+            <small>
+              The URL of the Mikan API.<br>
+              Example: <code>https://api.mikan.example.com</code>
+            </small>
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="settingForm[security:passport-mikan:loginUrl]" class="col-xs-3 control-label">Login URL</label>
+        <div class="col-xs-6">
+          <input class="form-control" type="text"
+                                      name="settingForm[security:passport-mikan:loginUrl]" value="{{ settingForm['security:passport-mikan:loginUrl'] || '' }}">
+          <p class="help-block">
+            <small>
+              The URL of the Mikan login page.<br>
+              Example: <code>https://mikan.example.com/login</code>
+            </small>
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="settingForm[security:passport-mikan:cookieName]" class="col-xs-3 control-label">Cookie name</label>
+        <div class="col-xs-6">
+          <input class="form-control" type="text"
+                                      name="settingForm[security:passport-mikan:cookieName]" value="{{ settingForm['security:passport-mikan:cookieName'] || '' }}">
+          <p class="help-block">
+            <small>
+              Key for a token in cookie.<br>
+            </small>
+          </p>
+        </div>
+      </div>
+    </div><!-- /.passport-mikan-configurations -->
+    <div class="form-group">
+      <div class="col-xs-offset-3 col-xs-6">
+        <button type="submit" class="btn btn-primary">{# the first element is the default button to submit #}
+          {{ t('Update') }}
+        </button>
+        <button type="button"
+                class="btn btn-default passport-mikan-hide-when-disabled"
+                data-target="#test-mikan-account" data-toggle="modal"
+                                                  {%if !isMikanEnabled %}style="display: none;"{% endif %}>
+          Test Saved Configuration
+        </button>
+      </div>
+    </div>
+  </fieldset>
+  <input type="hidden" name="_csrf" value="{{ csrf() }}">
+  <script>
+    // switch display according to on / off of radio buttons
+    $('input[name="{{nameForIsMikanEnabled}}"]:radio').change(function() {
+      const isEnabled = ($(this).val() === "true");
+      if (isEnabled) {
+        $('.passport-mikan-hide-when-disabled').show(400);
+      }
+      else {
+        $('.passport-mikan-hide-when-disabled').hide(400);
+      }
+    });
+    // store which button is clicked when submit
+    var submittedButton;
+    $('button[type="submit"]').click(function() {
+      submittedButton = $(this);
+    });
+    $('#mikanSetting, #mikanTest').each(function() {
+      $(this).submit(function()
+        {
+          function showMessage(formId, msg, status) {
+            $('#' + formId + ' .alert').remove();
+            if (!status) {
+              status = 'success';
+            }
+            var $message = $('<p class="alert"></p>');
+            $message.addClass('alert-' + status);
+            $message.html(msg.replace('\n', '<br>'));
+            $message.insertAfter('#' + formId + ' legend');
+            if (status == 'success') {
+              setTimeout(function()
+                {
+                  $message.fadeOut({
+                    complete: function() {
+                      $message.remove();
+                    }
+                  });
+                }, 5000);
+            }
+          }
+          var $form = $(this);
+          var $id = $form.attr('id');
+          var $button = submittedButton;
+          var $action = $button.attr('formaction') || $form.attr('action');
+          $button.attr('disabled', 'disabled');
+          var jqxhr = $.post($action, $form.serialize(), function(data)
+            {
+              if (data.status) {
+                const message = data.message || '更新しました';
+                showMessage($id, message);
+              } else {
+                showMessage($id, data.message, 'danger');
+              }
+            })
+            .fail(function() {
+              showMessage($id, 'エラーが発生しました', 'danger');
+            })
+            .always(function() {
+              $button.prop('disabled', false);
+            });
+          return false;
+        });
+    });
+  </script>
+</form>
+<div class="modal test-mikan-account" id="test-mikan-account">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">{{ t('Test mikan Account') }}</h4>
+      </div>
+      <div class="modal-body">
+        {% include '../../../widget/passport/mikan-association-tester.html' %}
+      </div><!-- /.modal-body -->
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+  <script>
+    /**
+    * associate (submit the form)
+     */
+    function associateMikan() {
+      var $form = $('#formMikanAssociationContainer > form');
+      var $action = '/me/external-accounts/associateMikan';
+      $form.attr('action', $action);
+      $form.submit();
+    }
+  </script>
+</div><!-- /.modal -->

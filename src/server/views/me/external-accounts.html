@@ -120,24 +120,39 @@
 
           <ul class="nav nav-tabs passport-settings" role="tablist">
             <li class="active">
-              <a href="#passport-ldap" data-toggle="tab" role="tab"><i class="fa fa-sitemap"></i> LDAP</a>
+              <a href="#passport-mikan" data-toggle="tab" role="tab"><i class="fa fa-paper-plane"></i> Mikan</a>
             </li>
-            <li class="tbd">
-              <a href="#passport-github" data-toggle="tab" role="tab"><i class="fa fa-github"></i> (TBD) GitHub</a>
-            </li>
-            <li class="tbd">
-              <a href="#passport-google-oauth" data-toggle="tab" role="tab"><i class="fa fa-google"></i> (TBD) Google OAuth</a>
-            </li>
-            <li class="tbd">
-              <a href="#passport-facebook" data-toggle="tab" role="tab"><i class="fa fa-facebook"></i> (TBD) Facebook</a>
-            </li>
-            <li class="tbd">
-              <a href="#passport-twitter" data-toggle="tab" role="tab"><i class="fa fa-twitter"></i> (TBD) Twitter</a>
-            </li>
+            <!-- <li>                                                                                           -->
+            <!--   <a href="#passport-ldap" data-toggle="tab" role="tab"><i class="fa fa-sitemap"></i> LDAP</a> -->
+            <!-- </li>                                                                                          -->
+            <!-- <li class="tbd">                                                                                                    -->
+            <!--   <a href="#passport-github" data-toggle="tab" role="tab"><i class="fa fa-github"></i> (TBD) GitHub</a>             -->
+            <!-- </li>                                                                                                               -->
+            <!-- <li class="tbd">                                                                                                    -->
+            <!--   <a href="#passport-google-oauth" data-toggle="tab" role="tab"><i class="fa fa-google"></i> (TBD) Google OAuth</a> -->
+            <!-- </li>                                                                                                               -->
+            <!-- <li class="tbd">                                                                                                    -->
+            <!--   <a href="#passport-facebook" data-toggle="tab" role="tab"><i class="fa fa-facebook"></i> (TBD) Facebook</a>       -->
+            <!-- </li>                                                                                                               -->
+            <!-- <li class="tbd">                                                                                                    -->
+            <!--   <a href="#passport-twitter" data-toggle="tab" role="tab"><i class="fa fa-twitter"></i> (TBD) Twitter</a>          -->
+            <!-- </li>                                                                                                               -->
           </ul>
 
           <div class="tab-content passport-settings m-t-15">
-            <div id="passport-ldap" class="tab-pane active" role="tabpanel" >
+            <div id="passport-mikan" class="tab-pane active" role="tabpanel" >
+              <div id="formMikanAssociationContainer">
+                {% include '../widget/passport/mikan-association-tester.html' %}
+                <div class="clearfix">
+                  <button type="button" class="btn btn-primary pull-right" onclick="associateMikan()">
+                    <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                    {{ t('Add') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+             <div id="passport-ldap" class="tab-pane" role="tabpanel" >
               <div id="formLdapAssociationContainer">
                 {% include '../widget/passport/ldap-association-tester.html' %}
                 <div class="clearfix">
@@ -176,6 +191,12 @@
       /**
        * associate (submit the form)
        */
+      function associateMikan() {
+        var $form = $('#formMikanAssociationContainer > form');
+        var $action = '/me/external-accounts/associateMikan';
+        $form.attr('action', $action);
+        $form.submit();
+      }
       function associateLdap() {
         var $form = $('#formLdapAssociationContainer > form');
         var $action = '/me/external-accounts/associateLdap';

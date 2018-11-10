@@ -1,7 +1,9 @@
 const debug = require('debug')('growi:service:PassportService');
 const urljoin = require('url-join');
 const passport = require('passport');
+const request = require('request');
 const LocalStrategy = require('passport-local').Strategy;
+const CookieStrategy = require('passport-cookie');
 const LdapStrategy = require('passport-ldapauth');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GitHubStrategy = require('passport-github').Strategy;
@@ -28,6 +30,11 @@ class PassportService {
      * the flag whether LocalStrategy is set up successfully
      */
     this.isLocalStrategySetup = false;
+
+    /**
+     * the flag whether MikanStrategy is set up successfully
+     */
+    this.isMikanStrategySetup = false;
 
     /**
      * the flag whether LdapStrategy is set up successfully
@@ -138,6 +145,68 @@ class PassportService {
 
     this.isLocalStrategySetup = true;
     debug('LocalStrategy: setup is done');
+  }
+
+  resetMikanStrategy() {
+    debug('MikanStrategy: reset');
+    passport.unuse('cookie');
+    this.isMikanStrategySetup = false;
+  }
+
+  setupMikanStrategy() {
+    // check whether the strategy has already been set up
+    if (this.isMikanStrategySetup) {
+      throw new Error('MikanStrategy has already been set up');
+    }
+    debug('MikanStrategy: setting up..');
+
+    const { configManager } = this.crowi;
+    const isEnabled = configManager.getConfig('crowi', 'security:passport-local:isEnabled');
+    const apiUrl = configManager.getConfig('crowi', 'security:passport-local:apiUrl');
+    const cookieName = configManager.getConfig('crowi', 'security:cookieName:apiUrl');
+
+    // when disabled
+    if (!isEnabled) {
+      return;
+    }
+
+    passport.use(new CookieStrategy(
+      { cookieName },
+      (token, done) => {
+        process.nextTick(() => {
+          request.post({
+            uri: `${apiUrl.replace(/\/$/g, '')}/auth/verify/`,
+            headers: { 'Content-type': 'application/json' },
+            json: { token },
+          }, (err, res, body) => {
+            if (err && err.statusCode !== 400) {
+              // server error
+              return done(err);
+            }
+            if (res.statusCode === 200) {
+              // valid token!
+              request.get({
+                uri: `${apiUrl.replace(/\/$/g, '')}/account/`,
+                headers: {
+                  'Content-type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+              }, (err, res, body) => {
+                // fetch account info
+                if (err || res.statusCode !== 200) { return done(err) }
+                return done(null, JSON.parse(body));
+              });
+            }
+            else {
+              // faild...
+              return done(null, false, { message: 'Incorrect credentials.' });
+            }
+          });
+        });
+      },
+    ));
+    this.isMikanStrategySetup = true;
+    debug('MikanStrategy: setup is done');
   }
 
   /**

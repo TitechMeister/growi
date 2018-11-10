@@ -50,8 +50,9 @@ module.exports = function(crowi, app) {
   app.get('/login'                   , middlewares.applicationInstalled    , login.login);
   app.get('/login/invited'           , login.invited);
   app.post('/login/activateInvited'  , form.invited                         , csrf, login.invited);
-  app.post('/login'                  , form.login                           , csrf, loginPassport.loginWithLocal, loginPassport.loginWithLdap, loginPassport.loginFailure);
+  app.post('/login'                  , form.login                           , csrf, loginPassport.loginWithLocal, loginPassport.loginWithMikan, loginPassport.loginWithLdap, loginPassport.loginFailure);
   app.post('/_api/login/testLdap'    , loginRequiredStrictly , form.login , loginPassport.testLdapCredentials);
+  app.post('/_api/login/testMikan'    , loginRequiredStrictly , form.login , loginPassport.testMikanCredentials);
 
   app.post('/register'               , form.register                        , csrf, login.register);
   app.get('/register'                , middlewares.applicationInstalled    , login.register);
@@ -64,10 +65,10 @@ module.exports = function(crowi, app) {
   app.get('/admin/security'                     , loginRequiredStrictly , adminRequired , admin.security.index);
   app.post('/_api/admin/security/general'       , loginRequiredStrictly , adminRequired , form.admin.securityGeneral, admin.api.securitySetting);
   app.post('/_api/admin/security/passport-local', loginRequiredStrictly , adminRequired , csrf, form.admin.securityPassportLocal, admin.api.securityPassportLocalSetting);
+  app.post('/_api/admin/security/passport-mikan', loginRequiredStrictly , adminRequired , csrf, form.admin.securityPassportMikan, admin.api.securityPassportMikanSetting);
   app.post('/_api/admin/security/passport-ldap' , loginRequiredStrictly , adminRequired , csrf, form.admin.securityPassportLdap, admin.api.securityPassportLdapSetting);
   app.post('/_api/admin/security/passport-saml' , loginRequiredStrictly , adminRequired , csrf, form.admin.securityPassportSaml, admin.api.securityPassportSamlSetting);
   app.post('/_api/admin/security/passport-basic', loginRequiredStrictly , adminRequired , csrf, form.admin.securityPassportBasic, admin.api.securityPassportBasicSetting);
-
   // OAuth
   app.post('/_api/admin/security/passport-google' , loginRequiredStrictly , adminRequired , csrf, form.admin.securityPassportGoogle, admin.api.securityPassportGoogleSetting);
   app.post('/_api/admin/security/passport-github' , loginRequiredStrictly , adminRequired , csrf, form.admin.securityPassportGitHub, admin.api.securityPassportGitHubSetting);
@@ -134,6 +135,7 @@ module.exports = function(crowi, app) {
   // external-accounts
   app.get('/me/external-accounts'                         , loginRequiredStrictly , me.externalAccounts.list);
   app.post('/me/external-accounts/disassociate'           , loginRequiredStrictly , me.externalAccounts.disassociate);
+  app.post('/me/external-accounts/associateMikan'          , loginRequiredStrictly , form.login , me.externalAccounts.associateMikan);
   app.post('/me/external-accounts/associateLdap'          , loginRequiredStrictly , form.login , me.externalAccounts.associateLdap);
 
   app.post('/me/password'             , form.me.password          , loginRequiredStrictly , me.password);

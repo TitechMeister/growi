@@ -152,6 +152,9 @@
               <a href="#passport-local" data-toggle="tab" role="tab"><i class="fa fa-users"></i> ID/Pass</a>
             </li>
             <li>
+              <a href="#passport-mikan" data-toggle="tab" role="tab"><i class="fa fa-paper-plane"></i> Mikan</a>
+            </li>
+            <li>
               <a href="#passport-ldap" data-toggle="tab" role="tab"><i class="fa fa-sitemap"></i> LDAP</a>
             </li>
             <li>
@@ -180,6 +183,10 @@
           <div class="tab-content p-t-10">
             <div id="passport-local" class="tab-pane active" role="tabpanel" >
               {% include './widget/passport/local.html' %}
+            </div>
+          <div class="tab-content p-t-10">
+            <div id="passport-mikan" class="tab-pane active" role="tabpanel" >
+              {% include './widget/passport/mikan.html' with { settingForm: settingForm } %}
             </div>
 
             <div id="passport-ldap" class="tab-pane" role="tabpanel" >

@@ -13,6 +13,7 @@ module.exports = {
   admin: {
     securityGeneral: require('./admin/securityGeneral'),
     securityPassportLocal: require('./admin/securityPassportLocal'),
+    securityPassportMikan: require('./admin/securityPassportMikan'),
     securityPassportLdap: require('./admin/securityPassportLdap'),
     securityPassportSaml: require('./admin/securityPassportSaml'),
     securityPassportBasic: require('./admin/securityPassportBasic'),
